@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lantern Launcher | Аккаунт</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: #1a1a1a; color: #e0e0e0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .container { width: 400px; padding: 30px; background: #252525; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        h1 { color: #4caf50; text-align: center; margin-bottom: 25px; }
+        label { display: block; font-size: 13px; margin-bottom: 5px; color: #aaa; }
+        input { width: 100%; padding: 10px; margin-bottom: 15px; background: #1a1a1a; border: 1px solid #444; color: #e0e0e0; border-radius: 5px; box-sizing: border-box; }
+        input:focus { outline: none; border-color: #4caf50; }
+        button { width: 100%; padding: 12px; background: #4caf50; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #45a049; }
+        .btn-secondary { background: #333; margin-top: 10px; font-size: 14px; padding: 10px; }
+        .btn-secondary:hover { background: #444; }
+        #message { margin-top: 15px; text-align: center; font-size: 14px; min-height: 20px; }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loginScreen">
+            <h1>Вход</h1>
+            <label>Email</label>
+            <input type="email" id="loginEmail" placeholder="your@email.com">
+            <label>Пароль</label>
+            <input type="password" id="loginPassword" placeholder="Пароль">
+            <button onclick="login()">ВОЙТИ</button>
+            <button class="btn-secondary" onclick="toggleScreen()">Создать аккаунт</button>
+        </div>
+
+        <div id="registerScreen" class="hidden">
+            <h1>Регистрация</h1>
+            <label>Email</label>
+            <input type="email" id="regEmail" placeholder="your@email.com">
+            <label>Пароль</label>
+            <input type="password" id="regPassword" placeholder="Мин. 6 символов">
+            <button onclick="register()">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+            <button class="btn-secondary" onclick="toggleScreen()">Назад ко входу</button>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://fsbxtppxdjwhgktudajt.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_Q8GoZZ2nM4vitPihEHcKcA_kpOT-VnT';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function toggleScreen() {
+            document.getElementById('loginScreen').classList.toggle('hidden');
+            document.getElementById('registerScreen').classList.toggle('hidden');
+            document.getElementById('message').innerText = '';
+        }
+        function showMessage(text, isError = false) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.innerText = text;
+            msgDiv.className = isError ? 'error' : 'success';
+        }
+        async function register() {
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            if(!email || !password) return showMessage('Заполните все поля', true);
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            if (error) showMessage(error.message, true);
+            else {
+                showMessage('Аккаунт создан! Теперь войдите.', false);
+                toggleScreen();
+                document.getElementById('loginEmail').value = email;
+            }
+        }
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            if(!email || !password) return showMessage('Заполните все поля', true);
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) showMessage('Ошибка: ' + error.message, true);
+            else showMessage('Успешный вход! Теперь открывайте лаунчер.', false);
+        }
+    </script>
+</body>
+</html>
